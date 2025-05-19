@@ -32,7 +32,7 @@ O objetivo foi criar um painel interativo que mostrasse os principais indicadore
 
 ## 🖼️ Imagem do Dashboard
 
-![Dashboard Power BI](dashboard.png)
+![Dashboard Power BI](./dashboard.png)
 
 ---
 
