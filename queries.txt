@@ -1,0 +1,143 @@
+1. Quais produtos nunca foram vendidos?
+
+2. Quais categorias possuem mais de 2 produtos que nunca foram vendidos?
+
+3. Quais produtos foram comprados em exatamente dois pedidos distintos?
+
+4. Quais produtos foram vendidos com preço menor ou igual a 25 e aparecem em mais de um pedido?
+
+5. Quais categorias têm média de preço superior a 40?
+
+6. Quais produtos têm o preço acima da média da sua categoria?
+
+7. Quais produtos foram vendidos apenas uma vez?
+
+8. Liste os produtos que pertencem a categorias com mais de 2 produtos cadastrados, mas nunca foram vendidos.
+
+9. Mostre o nome do produto, seu preço e a quantidade de pedidos distintos em que ele foi vendido.
+
+10. Quais categorias têm exatamente 2 produtos com preço maior que 30?
+
+
+
+
+
+
+1. SELECT name, product_id
+FROM products
+WHERE product_id NOT IN (
+	SELECT product_id
+    FROM order_items
+    )
+
+2. SELECT category, COUNT(*) AS QtdCategoria
+FROM products
+WHERE product_id NOT IN (
+	SELECT product_id
+    FROM order_items
+    )
+GROUP BY category
+HAVING COUNT(*) > 2
+
+3. SELECT product_id, COUNT(DISTINCT order_id)
+FROM order_items
+GROUP BY product_id
+HAVING COUNT(DISTINCT order_id) = 2
+
+4. SELECT name, price, product_id
+FROM products
+WHERE product_id IN (
+	SELECT product_id
+    FROM order_items
+    GROUP BY product_id
+    HAVING COUNT(DISTINCT order_id) > 1
+    ) AND price <= 25
+
+5. SELECT category, AVG(price)
+FROM products
+GROUP BY category
+HAVING AVG(price) > 40
+
+6. SELECT name, price, category
+FROM products p 
+WHERE price > (
+	SELECT AVG(price)
+    FROM products
+    WHERE category = p.category
+)
+
+    
+
+7. SELECT name, product_id
+FROM products
+WHERE product_id IN (
+	SELECT product_id
+    FROM order_items
+    GROUP BY product_id
+    HAVING COUNT(product_id) = 1
+)
+
+
+8.SELECT name, product_id, category
+FROM products
+WHERE Category IN(
+	SELECT category
+    FROM products
+    GROUP BY category
+    HAVING COUNT(category) > 2
+    ) 
+	AND product_id NOT IN (
+	SELECT product_id 
+    FROM order_items
+    )
+
+
+9. SELECT products.name, products.price, COUNT(DISTINCT order_items.order_id)
+FROM products 
+INNER JOIN order_items ON products.product_id = order_items.product_id
+GROUP BY products.product_id, products.name, products.price
+
+
+10. SELECT category
+FROM products
+WHERE price > 30
+GROUP BY category
+HAVING COUNT(*) = 2
+
+
+
+Perguntas do Dashboard
+
+1. Total de vendas por categoria
+2. Produtos mais vendidos
+3. Ticket médio por pedido
+4. Quantidade de pedidos por produto
+
+
+1. SELECT p.category, COUNT(oi.product_id) AS total_vendas
+FROM products p
+JOIN order_items oi ON p.product_id = oi.product_id
+GROUP BY p.category
+
+
+2. SELECT name, COUNT(*) AS total_vendido
+FROM products
+JOIN order_items ON products.product_id = order_items.product_id
+GROUP BY name
+ORDER BY total_vendido DESC
+LIMIT 5
+
+
+3. SELECT AVG(total_por_pedido)
+FROM (
+	SELECT order_id, SUM(price) AS total_por_pedido
+	FROM order_items
+	JOIN products ON products.product_id = order_items.product_id
+	GROUP BY order_id
+) AS pedidos
+
+
+4. SELECT name, COUNT(DISTINCT order_id)
+FROM products
+JOIN order_items ON products.product_id = order_items.product_id
+GROUP BY name
